@@ -52,7 +52,7 @@ class Tag(db.Model):
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True) # vk_id
-    email = db.Column(db.String(120), index=True, unique=True)
+    vk_id = db.Column(db.String(120), index=True, unique=True)
 
     content = db.relationship('Content', backref='author', lazy='dynamic')
     tags = db.relationship(
@@ -89,6 +89,7 @@ class Content(db.Model):
     slug = db.Column(db.String(140), unique=True)
     body = db.Column(db.Text)
     created = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    file_url = db.Column(db.String(140), unique=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     tags = db.relationship(
@@ -102,6 +103,10 @@ class Content(db.Model):
     def generate_slug(self):
         if self.title:
             self.slug = slugify(self.title + str(int(time())))
+    
+    def generate_url(self):
+        if self.title:
+            self.file_url = slugify(self.user_id + str(int(time())))
 
 
 class UserLogin(Resource):
