@@ -35,19 +35,47 @@ def get_create_user(vk_id):
     copydir(os.path.join('app', 'static', 'user_data'), user_folders)
     return jsonify({'user': [{'vk_id': user.vk_id}]})
 
-# @app.route('/api/create_content/<vk_id>/<title>/<body>/<tag>', methods=['GET', 'POST'])
-# def get_create_content(vk_id, title, body, tag):
-#     # create content
-#     user = User.query.filter(User.vk_id == vk_id).first()
-#     content = Content(
-#         title=title, 
-#         body=body, 
-#         author=user, 
-#         )
-#     #Content.tags.append(Tag.query.filter_by(name=tag).first())
-#     db.session.add(Content)
-#     db.session.commit()
-#     return jsonify({'content': [{'id': content.id, 'title': content.title, 'body': content.body}]})
+@app.route('/api/create_text_content/<vk_id>/<title>/<body>/<tag>', methods=['GET', 'POST'])
+def get_create_text_content(vk_id, title, body, tag):
+    # create text content
+    user = User.query.filter(User.vk_id == vk_id).first()
+    content = Content(
+        title=title, 
+        body=body,
+        author=user, 
+        )
+    content.tags.append(Tag.query.filter_by(name=tag).first())
+    db.session.add(content)
+    db.session.commit()
+    return jsonify(
+        {'content': [{
+            'id': content.id, 
+            'title': content.title, 
+            'body': content.body, 
+            'tags': content.tags[0].name}]},
+        {'author': [{'id': user.id, 'vk': user.vk_id}]},
+         )
+
+@app.route('/api/create_file_content/<vk_id>/<title>/<fileurl>/<tag>', methods=['GET', 'POST'])
+def get_create_file_content(vk_id, title, fileurl, tag):
+    # create file content
+    user = User.query.filter(User.vk_id == vk_id).first()
+    content = Content(
+        title=title, 
+        file_url = fileurl,
+        author=user, 
+        )
+    content.tags.append(Tag.query.filter_by(name=tag).first())
+    db.session.add(content)
+    db.session.commit()
+    return jsonify(
+        {'content': [{
+            'id': content.id, 
+            'title': content.title, 
+            'file_url': content.file_url, 
+            'tags': content.tags[0].name}]},
+        {'author': [{'id': user.id, 'vk': user.vk_id}]},
+         )
 
 @app.route('/api/users', methods=['GET', 'POST'])
 def get_all_users():
@@ -55,7 +83,7 @@ def get_all_users():
     users = User.query.all()
     all_users_list = []
     for user in users:
-        all_users_list.append({'id': user.id, 'email': user.vk_id})
+        all_users_list.append({'id': user.id, 'vk_id': user.vk_id})
     return jsonify({'users': [all_users_list]})
 
 @app.route('/api/user/<vk_id>', methods=['GET', 'POST'])
