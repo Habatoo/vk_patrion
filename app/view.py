@@ -13,16 +13,16 @@ from app.copydir import copydir
 from app.models import *
 
 
-@app.route('/api/create_user/<vk_id>', methods=['GET', 'POST'])
-def get_create_user(vk_id):
+@app.route('/api/create_user/<vk_id>/<tag>', methods=['GET', 'POST'])
+def get_create_user(vk_id, tag):
     # create user
     user = User.query.filter(User.vk_id == vk_id).first()
     if user: 
         return make_response(jsonify({'error': 'User already exists'}), 412)
-
     user = User(
         vk_id=vk_id,
         )
+    user.tags.append(Tag.query.filter_by(name=tag).first())
     db.session.add(user)
     db.session.commit()
 
@@ -33,7 +33,7 @@ def get_create_user(vk_id):
         os.mkdir(user_folders)
         os.mkdir(os.path.join(user_folders, 'files'))
     copydir(os.path.join('app', 'static', 'user_data'), user_folders)
-    return jsonify({'user': [{'vk_id': user.vk_id}]})
+    return jsonify({'user': [{'vk_id': user.vk_id, 'tags': user.tags[0].name}]})
 
 @app.route('/api/create_text_content/<vk_id>/<title>/<body>/<tag>', methods=['GET', 'POST'])
 def get_create_text_content(vk_id, title, body, tag):
@@ -117,8 +117,6 @@ def select_content(id):
     content = Content.query.filter_by(id=id).first_or_404()
     return jsonify(
         {'contents': [{'id': content.id, 'title': content.title, 'slug': content.slug, 'body': content.body}]})
-
-
 
 @app.errorhandler(404)
 def not_found(error):
