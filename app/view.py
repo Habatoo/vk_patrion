@@ -12,12 +12,6 @@ from flask import request
 from app.copydir import copydir
 from app.models import *
 
-# @app.route('/')
-# def index():
-#     return "Test vk"
-
-# api.add_resource(UserLogin, '/api/login/')
-# api.add_resource(ProtectArea, '/api/protect-area/')
 
 @app.route('/api/create_user/<vk_id>', methods=['GET', 'POST'])
 def get_create_user(vk_id):
@@ -41,6 +35,20 @@ def get_create_user(vk_id):
     copydir(os.path.join('app', 'static', 'user_data'), user_folders)
     return jsonify({'user': [{'vk_id': user.vk_id}]})
 
+# @app.route('/api/create_content/<vk_id>/<title>/<body>/<tag>', methods=['GET', 'POST'])
+# def get_create_content(vk_id, title, body, tag):
+#     # create content
+#     user = User.query.filter(User.vk_id == vk_id).first()
+#     content = Content(
+#         title=title, 
+#         body=body, 
+#         author=user, 
+#         )
+#     #Content.tags.append(Tag.query.filter_by(name=tag).first())
+#     db.session.add(Content)
+#     db.session.commit()
+#     return jsonify({'content': [{'id': content.id, 'title': content.title, 'body': content.body}]})
+
 @app.route('/api/users', methods=['GET', 'POST'])
 def get_all_users():
     # select all users - author of content
@@ -50,26 +58,38 @@ def get_all_users():
         all_users_list.append({'id': user.id, 'email': user.vk_id})
     return jsonify({'users': [all_users_list]})
 
-@app.route('/api/users/<tag>', methods=['GET', 'POST'])
-def get_users_bytags(task_id):
-    # select all users - author of contents by tags
-    pass
+@app.route('/api/user/<vk_id>', methods=['GET', 'POST'])
+def get_user(vk_id):
+    # select user and his content by id
+    user = User.query.filter_by(vk_id=vk_id).first_or_404()
+    contents = user.content.order_by(Content.created.desc()).all()
+    all_user_contents = []
+    for content in contents:
+        for tag in content.tags:
+            print(tag)
+            all_user_contents.append(
+                {'id': content.id, 'title': content.title, 'tag': tag.name, 'tagslug': tag.slug})
+    return jsonify(
+        {'user': [{'vk_id': user.vk_id}]}, 
+        {'content': [all_user_contents]}
+        )
 
-@app.route('/api/user/<int:user_id>', methods=['GET', 'POST'])
-def get_user(task_id):
-    pass
+@app.route('/api/contents', methods=['GET', 'POST'])
+def select_contents():
+    # select all contents of all users
+    contents = Content.query.all()
+    all_contents_list = []
+    for content in contents:
+        all_contents_list.append({'id': content.id, 'title': content.title, 'slug': content.slug})
+    return jsonify({'contents': [all_contents_list]})
 
-@app.route('/api/contents', methods=['GET'])
-def select_all_contents():
-    pass
+@app.route('/api/content/<id>', methods=['GET', 'POST'])
+def select_content(id):
+    # select all contents of all users
+    content = Content.query.filter_by(id=id).first_or_404()
+    return jsonify(
+        {'contents': [{'id': content.id, 'title': content.title, 'slug': content.slug, 'body': content.body}]})
 
-@app.route('/api/content/<tag>', methods=['GET'])
-def select_content():
-    pass
-
-@app.route('/api/content', methods=['POST'])
-def create_content():
-    pass
 
 
 @app.errorhandler(404)
