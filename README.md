@@ -37,7 +37,7 @@ flask run --host=0.0.0.0 --port=5000 # вместо 5000 используем н
  - тэгам - темам контанта и интересам польователей [Tag](http://localhost:5000/admin/tag)
 ***
 ## API:
-Доступные API, тестирование проводится с помощью ```curl``` (для Windows используеся Cygwin):
+Доступные API, тестирование проводится с помощью ```curl``` (для Windows используеся ```Cygwin```):
 - создание пользователя c vk id - ```vk3333333333```, с тегом (интересами) ```translation```:
 
 ```
@@ -72,13 +72,15 @@ curl -i -H "Content-Type: application/json" http://localhost:5000/api/create_fil
 
 ```curl -i -H "Content-Type: application/json" http://localhost:5000/api/content/1```
 ***
-## Бэк развернут на heroku по https://vkdemiurgs.herokuapp.com/
-Админа так же доступна [адресу](https://vkdemiurgs.herokuapp.com/admin)
+## Бэкенд прокета ***VK.Творцы***  развернут на ```heroku``` по адресу https://vkdemiurgs.herokuapp.com/
+Панель администратора проекта на ```heroku``` так же доступна [адресу](https://vkdemiurgs.herokuapp.com/admin)
 
-Для heroku так же доступны все API, тестирование проводится с помощью ```curl``` (для Windows используеся Cygwin):
+Для ```heroku``` так же доступны все API, тестирование проводится с помощью ```curl``` (для Windows используеся ```Cygwin```):
 - запрос списка всех пользователей:
 
 ```curl -i -H "Content-Type: application/json" https://vkdemiurgs.herokuapp.com/api/users```
+
+Остаьные запросы по аналогии с запросами для ```localhost```.
 
 
 
