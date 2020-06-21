@@ -1,7 +1,6 @@
 from app import app
 from app import db
 from app import log
-from app import api
 
 from flask import make_response
 from flask import jsonify
@@ -9,7 +8,6 @@ from flask import abort
 from flask import make_response
 from flask import request
 
-from app.copydir import copydir
 from app.models import *
 
 
@@ -22,7 +20,8 @@ def get_create_user(vk_id, tag):
     user = User(
         vk_id=vk_id,
         )
-    user.tags.append(Tag.query.filter_by(name=tag).first())
+    if tag:
+        user.tags.append(Tag.query.filter_by(name=tag).first())
     db.session.add(user)
     db.session.commit()
 
@@ -32,7 +31,6 @@ def get_create_user(vk_id, tag):
     if not os.path.isdir(user_folders):
         os.mkdir(user_folders)
         os.mkdir(os.path.join(user_folders, 'files'))
-    copydir(os.path.join('app', 'static', 'user_data'), user_folders)
     return jsonify({'user': [{'vk_id': user.vk_id, 'tags': user.tags[0].name}]})
 
 @app.route('/api/create_text_content/<vk_id>/<title>/<body>/<tag>', methods=['GET', 'POST'])

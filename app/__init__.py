@@ -10,22 +10,12 @@ from flask_script import Manager
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
 
-from flask_restful import Resource,  Api
-from flask_jwt_extended import JWTManager
-from flask_jwt_extended import create_access_token, jwt_required
-from flask_cors import CORS
-
 from config import config
 
 app = Flask(__name__)
 app.config.from_object(config.get('dev'))
 
 db  = SQLAlchemy(app)
-
-# app.config['JWT_SECRET_KEY'] = 'hj67#28mnHJGT67#2degn'
-jwt = JWTManager(app)
-CORS(app)
-api = Api(app)
 
 migrate = Migrate(app, db)
 manager = Manager(app)
