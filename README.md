@@ -25,10 +25,10 @@
 git clone git@github.com:Habatoo/vk_patrion.git
 cd vk_patrion
 pip install -r requirements.txt
-flask run
+flask run --host=0.0.0.0 --port=5000 # вместо 5000 используем нужный порт
 ```
 
-смена порта в файле main.py ```app.run(host='0.0.0.0', port=8080)```
+смена порта так же возможна в файле main.py ```app.run(host='0.0.0.0', port=8080)```
 ***
 ## Админка:
 После установки по локальному [адресу](http://localhost:5000/admin) доступна панель администратора, для создания и изменения информации по:
