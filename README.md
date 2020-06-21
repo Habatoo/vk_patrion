@@ -37,20 +37,20 @@ flask run
  - тэгам - темам контанта и интересам польователей [Tag](http://localhost:5000/admin/tag)
 ***
 ## API:
-Доступные API, тестирование проводится с помощью curl:
-- создание пользователя c vk id - vk3333333333, с тегом (интересами) translation:
+Доступные API, тестирование проводится с помощью ```curl```:
+- создание пользователя c vk id - ```vk3333333333```, с тегом (интересами) ```translation```:
 
 ```
 curl -i -H "Content-Type: application/json" http://localhost:5000/api/create_user/vk3333333333/translation
 ```
 
-- создание текстового контента пользователем с vk id - vk3333333333, с темой title, содержимым body, и тегом translation:
+- создание текстового контента пользователем с vk id - ```vk3333333333```, с темой ```title```, содержимым ```body```, и тегом ```translation```:
 
 ```
 curl -i -H "Content-Type: application/json" http://localhost:5000/api/create_text_content/vk3333333333/title/body/translation
 ```
 
-- создание файлового контента пользователем с vk id - vk3333333333, с темой title, ссылки на скачивание fileurl, и тегом music:
+- создание файлового контента пользователем с vk id - ```vk3333333333```, с темой ```title```, ссылки на скачивание ```fileurl```, и тегом ```music```:
 
 ```
 curl -i -H "Content-Type: application/json" http://localhost:5000/api/create_file_content/vk3333333333/title/fileurl/music
@@ -60,7 +60,7 @@ curl -i -H "Content-Type: application/json" http://localhost:5000/api/create_fil
 
 ```curl -i -H "Content-Type: application/json" http://localhost:5000/api/users```
 
-- запрос пользователя с c vk id - vk3333333333 и всего его контента:
+- запрос пользователя с c vk id - ```vk3333333333``` и всего его контента:
 
 ```curl -i -H "Content-Type: application/json" http://localhost:5000/api/user/vk3333333333```
 
@@ -68,7 +68,7 @@ curl -i -H "Content-Type: application/json" http://localhost:5000/api/create_fil
 
 ```curl -i -H "Content-Type: application/json" http://localhost:5000/api/contents```
 
-- запрос содержимого контента с id 1:
+- запрос содержимого контента с id ```1```:
 
 ```curl -i -H "Content-Type: application/json" http://localhost:5000/api/content/1```
  
