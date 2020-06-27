@@ -1,9 +1,5 @@
 from flask import request
 from flask_login import current_user
-from flask_restful import Resource
-from flask_restful import Api
-from flask_jwt_extended import create_access_token
-from flask_jwt_extended import jwt_required
 from flask_login import UserMixin
 
 from app import app, login, db
@@ -18,22 +14,9 @@ import os
 def load_user(id):
     return User.query.get(int(id))
 
-
 def slugify(string):
     pattern = r'[^\w+]'
     return re.sub(pattern, '-', string)
-
-
-followers = db.Table('followers',
-    db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
-)
-
-user_tags = db.Table(
-    'user_tags', 
-    db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-    db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'))
-)
 
 content_tags = db.Table(
     'content_tags', 
@@ -48,53 +31,63 @@ class Tag(db.Model):
 
     def __init__(self, *args, **kwargs):
         super(Tag, self).__init__(*args, **kwargs)
-        self.slug = slugify(self.name)
+        self.slug = slugify(self.name)   
 
 class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True) # vk_id
-    vk_id = db.Column(db.String(120), index=True, unique=True)
+    __tablename__ = 'user'
+    user_id = db.Column(db.Integer, primary_key=True)
+    vk_id = db.Column(db.String(120), index=True, unique=True) # vk_id
+    creator = db.Column(db.Boolean, default=False, nullable=False) # True when add cabinet
+    # define relationship
+    cabinet = db.relationship('CreatorCabinet', uselist=False, backref='user')
 
-    content = db.relationship('Content', backref='author', lazy='dynamic')
-    tags = db.relationship(
-        'Tag', secondary=user_tags, backref=db.backref('users_tags', lazy='dynamic'))
+class CreatorCabinet(db.Model):
+    __tablename__ = 'cabinet'
+    cabinet_id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(140))
+    description = db.Column(db.Text)
+    cover_url = db.Column(db.String(120), unique=True)
 
-    followed = db.relationship(
-        'User', secondary=followers, 
-        primaryjoin=(followers.c.follower_id == id),
-        secondaryjoin=(followers.c.followed_id == id),
-        backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
+    user_id = db.Column(db.Integer, ForeignKey('user.user_id'))
+    sponsor_tier = db.relationship('SponsorTier', backref='tier', lazy='dynamic')
+    content = db.relationship('Content', backref='contents', lazy='dynamic')
 
-    def follow(self, user):
-        if not self.is_following(user):
-            self.followed.append(user)
+    def __init__(self, *args, **kwargs):
+        super(CreatorCabinet, self).__init__(*args, **kwargs)
+        self.generate_slug()
 
-    def unfollow(self, user):
-        if self.is_following(user):
-            self.followed.remove(user)
+    def generate_slug(self):
+        if self.title:
+            self.cover_url = slugify(self.title + str(int(time())))
 
-    def is_following(self, user):
-        return self.followed.filter(
-            followers.c.followed_id == user.id).count() > 0
+class SponsorTier(db.Model):
+    __tablename__ = 'tier'
+    tier_id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(140))
+    description = db.Column(db.Text)
+    price = db.Column(db.Float)
 
-    def followed_content(self):
-        followed = Content.query.join(
-            followers, (followers.c.followed_id == Content.user_id)).filter(
-                followers.c.follower_id == self.id)
-        own = Content.query.filter_by(user_id=self.id)
-        return followed.union(own).order_by(Content.created.desc())
+    cabinet_id = db.Column(db.Integer, db.ForeignKey('creatorcabinet.cabinet_id'))
+    # define relationship
+    content = db.relationship('Content', uselist=False, backref='tier')
 
 class Content(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    __tablename__ = 'content'
+    content_id = db.Column(db.Integer, primary_key=True)
+    
     title = db.Column(db.String(140))
-    slug = db.Column(db.String(140), unique=True)
     body = db.Column(db.Text)
     created = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    file_url = db.Column(db.String(140), unique=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    tier_id = db.Column(db.Integer, ForeignKey('tier.tier_id'))
+
+    slug = db.Column(db.String(140), unique=True) # text url
+    file_url = db.Column(db.String(140), unique=True) # files url
+
+    # user_reader_id = db.Column(db.Integer, db.ForeignKey('user.id')) id users who can
 
     tags = db.relationship(
         'Tag', secondary=content_tags, backref=db.backref('content_tags', lazy='dynamic'))
-
 
     def __init__(self, *args, **kwargs):
         super(Content, self).__init__(*args, **kwargs)
@@ -107,22 +100,3 @@ class Content(db.Model):
     def generate_url(self):
         if self.title:
             self.file_url = slugify(self.user_id + str(int(time())))
-
-
-class UserLogin(Resource):
-    def post(self):
-        username = request.get_json()['username']
-        password = request.get_json()['password']
-        if username == 'vk' and password == 'vk':
-            access_token = create_access_token(identity={
-                'role': 'vk_user',
-            }, expires_delta=False)
-            result = {'token': access_token}
-            return result
-        return {'error': 'Invalid username and password'}
-
-
-class ProtectArea(Resource):
-    @jwt_required
-    def get(self):
-        return {'answer': 42}
