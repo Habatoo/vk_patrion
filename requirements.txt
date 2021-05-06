@@ -3,7 +3,7 @@ aniso8601==8.0.0
 click==7.1.2
 Flask==1.1.2
 Flask-Admin==1.5.6
-Flask-Cors==3.0.8
+Flask-Cors==3.0.9
 Flask-JWT-Extended==3.24.1
 Flask-Login==0.5.0
 Flask-LoginManager==1.1.6
